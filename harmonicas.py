@@ -24,6 +24,6 @@ def make_harmonica(starting_note):
                   '9\'', '9', '(9o)', '(10)', '10\'\'', '10\'', '10', '(10o)']
     note = m21.pitch.Pitch(str(starting_note))
     for pos in harm_notes:
-        harm[str(note)] = pos
+        harm[note.ps] = pos
         note = note.transpose(1)
     return harm
