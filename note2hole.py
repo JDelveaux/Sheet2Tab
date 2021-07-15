@@ -19,7 +19,7 @@ if len(key) < 2:
 harm = harmonicas.make_harmonica(key)
 
 #This is for use with a MXL file
-input_file = 'toconvert/Littleroot Town.mxl'
+input_file = 'toconvert/stupid_wii_music.mxl'
 mxl_file = m21.converter.parse(input_file)
 part_num = input('which part? (int, 0-#ofstaves)')
 remove_chords = input('Reduce chords? (no or (keep) "high"/"low"): ')
@@ -38,28 +38,32 @@ for m in range(len(part)):
                 #for notes, just get pitch
                 try:
                     if part[m][e].isNote:
-                        outfile.write(str(part[m][e].pitch)+'\t'+ harm[str(part[m][e].pitch)]+'\n')
+                        outfile.write(str(part[m][e].pitch)+'\t'+ harm[part[m][e].pitch.ps]+'\n')
                         #append harmonica note as lyric
-                        part[m][e].addLyric(harm[str(part[m][e].pitch)])
+                        part[m][e].addLyric(harm[part[m][e].pitch.ps])
                 except AttributeError:
                     continue
                 #for chords, convert each individual note
                 try:
                     if part[m][e].isChord:
                         if remove_chords not in ['high', 'High', 'low', 'Low']:
+                            #extract notes
+                            tmp = [a for a in part[m][e]]
+                            #get positions
+                            pos = [harm[n.pitch.ps] for n in tmp]
+                            #convert to names
                             tmp = [str(a.pitch) for a in part[m][e]]
-                            pos = [harm[e] for e in tmp]
                             outfile.write(str(tmp)+'\t'+str(pos)+'\n')
                             chord_lyric = str()
                             for _ in range(len(tmp)):
                                 chord_lyric += pos[_] + '\n'
                             part[m][e].addLyric(chord_lyric)
                         elif remove_chords in ['High', 'high']:
-                            outfile.write(str(part[m][e][-1].pitch)+'\t'+ harm[str(part[m][e][-1].pitch)]+'\n')
-                            part[m][e].addLyric(harm[str(part[m][e][-1].pitch)])
+                            outfile.write(str(part[m][e][-1].pitch)+'\t'+ harm[part[m][e][-1].pitch.ps]+'\n')
+                            part[m][e].addLyric(harm[part[m][e][-1].pitch.ps])
                         elif remove_chords in ['Low', 'low']:
-                            outfile.write(str(part[m][e][0].pitch)+'\t'+ harm[str(part[m][e][0].pitch)]+'\n')
-                            part[m][e].addLyric(harm[str(part[m][e][0].pitch)])
+                            outfile.write(str(part[m][e][0].pitch)+'\t'+ harm[part[m][e][0].pitch.ps]+'\n')
+                            part[m][e].addLyric(harm[part[m][e][0].pitch.ps])
                 except AttributeError:
                     continue
     #resolve from first try (check if measure)
