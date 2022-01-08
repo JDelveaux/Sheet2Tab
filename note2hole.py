@@ -1,30 +1,37 @@
 """
 
-This program tells you the note to play on
-a harmonica given any note.
-
-For example:
-
-input harmonica is C harmonica
-input note is C4
-output note is 1 blow
+This program prints tabs on sheet music
+in the key of any diatonic harmonica you desire
 
 """
 import harmonicas
 import music21 as m21
 
-key = input('Select harmonica key (and pitch): ')
-if len(key) < 2:
-    key = input('No, you have to choose something like "C4" or "B4-" or else it doesn\'t work: ')
+
+#For Diatonics
+
+key = input('Enter key of harmonica (e.g. A-3 or C4)')
 harm = harmonicas.make_harmonica(key)
+harm_type = 'diatonic'
+"""
+
+#For 10 hole chromatica
+harm = harmonicas.make_chrom()
+harm_type = 'chromatic'
+"""
 
 #This is for use with a MXL file
-input_file = 'toconvert/stupid_wii_music.mxl'
+input_file = 'toconvert/Leadsheet_-_Californication_-_Red_Hot_Chili_Peppers.midi'
 mxl_file = m21.converter.parse(input_file)
-part_num = input('which part? (int, 0-#ofstaves)')
+part_num = int(input('which part? (int, 0-#ofstaves)'))
+trans_number = int(input('Transpose? Enter number steps or "0"'))
 remove_chords = input('Reduce chords? (no or (keep) "high"/"low"): ')
 output_name = input("File output name: \n")
 outfile = open('output/' + output_name + '.txt', 'w')
+
+#transpose if transpose
+if trans_number != 0:
+    mxl_file = mxl_file.transpose(trans_number)
 
 #We want only the Treble Clef
 part = mxl_file.getElementsByClass(m21.stream.Part)[int(part_num)]
@@ -38,11 +45,11 @@ for m in range(len(part)):
                 #for notes, just get pitch
                 try:
                     if part[m][e].isNote:
-                        outfile.write(str(part[m][e].pitch)+'\t'+ harm[part[m][e].pitch.ps]+'\n')
+                        outfile.write(str(part[m][e].pitch)+'\t'+ harm[part[m][e].pitch.ps] +'\n')
                         #append harmonica note as lyric
-                        part[m][e].addLyric(harm[part[m][e].pitch.ps])
+                        part[m][e].addLyric(text = harm[part[m][e].pitch.ps])
                 except AttributeError:
-                    continue
+                    pass
                 #for chords, convert each individual note
                 try:
                     if part[m][e].isChord:
@@ -57,18 +64,18 @@ for m in range(len(part)):
                             chord_lyric = str()
                             for _ in range(len(tmp)):
                                 chord_lyric += pos[_] + '\n'
-                            part[m][e].addLyric(chord_lyric)
+                            part[m][e].addLyric(text = chord_lyric)
                         elif remove_chords in ['High', 'high']:
-                            outfile.write(str(part[m][e][-1].pitch)+'\t'+ harm[part[m][e][-1].pitch.ps]+'\n')
-                            part[m][e].addLyric(harm[part[m][e][-1].pitch.ps])
+                            outfile.write(str(part[m][e][-1].pitch)+'\t'+ harm[part[m][e][-1].pitch.ps] +'\n')
+                            part[m][e].addLyric(text = harm[part[m][e][-1].pitch.ps])
                         elif remove_chords in ['Low', 'low']:
                             outfile.write(str(part[m][e][0].pitch)+'\t'+ harm[part[m][e][0].pitch.ps]+'\n')
-                            part[m][e].addLyric(harm[part[m][e][0].pitch.ps])
+                            part[m][e].addLyric(text =harm[part[m][e][0].pitch.ps])
                 except AttributeError:
-                    continue
+                    pass
     #resolve from first try (check if measure)
     except AttributeError:
-        continue
+        pass
 
 outfile.close()
 part.write('mxl', fp= 'output/' + output_name)
